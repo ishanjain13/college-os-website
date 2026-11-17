@@ -51,7 +51,7 @@ export function OSProvider({ children }) {
     saveStateToStorage(state);
   }, [state]);
 
-  // Apply theme to document element
+  // Apply theme and accent color to document element with smooth transition
   useEffect(() => {
     const theme = state.appearance.theme || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
@@ -60,7 +60,15 @@ export function OSProvider({ children }) {
     } else {
       document.documentElement.classList.add('dark');
     }
-  }, [state.appearance.theme]);
+
+    if (state.appearance.accentColor) {
+      document.documentElement.style.setProperty('--color-accent', state.appearance.accentColor);
+      document.documentElement.style.setProperty('--color-accent-glow', `${state.appearance.accentColor}55`);
+    } else {
+      document.documentElement.style.removeProperty('--color-accent');
+      document.documentElement.style.removeProperty('--color-accent-glow');
+    }
+  }, [state.appearance.theme, state.appearance.accentColor]);
 
   // Sync sound settings with sound service
   useEffect(() => {

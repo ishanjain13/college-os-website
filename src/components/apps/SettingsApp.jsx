@@ -212,6 +212,60 @@ export default function SettingsApp() {
             </div>
           </div>
 
+          {/* Accent Color Picker */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-bold uppercase text-white font-mono">Accent Color</h4>
+              {state.appearance.accentColor && (
+                <button
+                  onClick={() => updateAppearance({ accentColor: null })}
+                  className="text-[10px] text-os-text-subtle hover:text-white underline cursor-pointer"
+                >
+                  Reset to Theme Default
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              {[
+                { label: 'Indigo', value: '#6366f1' },
+                { label: 'Violet', value: '#8b5cf6' },
+                { label: 'Cyan', value: '#06b6d4' },
+                { label: 'Emerald', value: '#10b981' },
+                { label: 'Rose', value: '#f43f5e' },
+                { label: 'Amber', value: '#f59e0b' },
+                { label: 'Blue', value: '#3b82f6' },
+                { label: 'Pink', value: '#ec4899' },
+              ].map((c) => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => updateAppearance({ accentColor: c.value })}
+                  className={`w-8 h-8 rounded-xl border-2 transition-transform cursor-pointer flex items-center justify-center ${
+                    state.appearance.accentColor === c.value
+                      ? 'scale-110 border-white shadow-elevation-2'
+                      : 'border-transparent hover:scale-105'
+                  }`}
+                  style={{ backgroundColor: c.value }}
+                  title={c.label}
+                >
+                  {state.appearance.accentColor === c.value && (
+                    <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
+                  )}
+                </button>
+              ))}
+              <div className="flex items-center gap-2 pl-2 border-l border-white/10">
+                <input
+                  type="color"
+                  value={state.appearance.accentColor || '#6366f1'}
+                  onChange={(e) => updateAppearance({ accentColor: e.target.value })}
+                  className="w-8 h-8 rounded-lg bg-transparent border-0 cursor-pointer"
+                  title="Custom Hex Color"
+                />
+                <span className="text-[11px] font-mono text-os-text-muted">Custom Hex</span>
+              </div>
+            </div>
+          </div>
+
           {/* Wallpaper Selection */}
           <div>
             <h4 className="text-xs font-bold uppercase text-white font-mono mb-3">Desktop Wallpapers</h4>

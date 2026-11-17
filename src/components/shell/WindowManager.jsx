@@ -1,26 +1,27 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import Window from './Window';
 import { useOS } from '../../context/OSContext';
+import { Skeleton } from '../ui/Skeleton';
 
-// Application Component Imports
-import DashboardApp from '../apps/DashboardApp';
-import GoalsApp from '../apps/GoalsApp';
-import HabitsApp from '../apps/HabitsApp';
-import AcademicsApp from '../apps/AcademicsApp';
-import FocusApp from '../apps/FocusApp';
-import PlannerApp from '../apps/PlannerApp';
-import NotesApp from '../apps/NotesApp';
-import FitnessApp from '../apps/FitnessApp';
-import MoneyApp from '../apps/MoneyApp';
-import CareerApp from '../apps/CareerApp';
-import WellbeingApp from '../apps/WellbeingApp';
-import JournalApp from '../apps/JournalApp';
-import GamificationApp from '../apps/GamificationApp';
-import VisionBoardApp from '../apps/VisionBoardApp';
-import FutureMeApp from '../apps/FutureMeApp';
-import CampusLifeApp from '../apps/CampusLifeApp';
-import AIStudyBuddyApp from '../apps/AIStudyBuddyApp';
-import SettingsApp from '../apps/SettingsApp';
+// Code-split and lazy-load all 18 heavy application components for fast initial load & 60fps
+const DashboardApp = lazy(() => import('../apps/DashboardApp'));
+const GoalsApp = lazy(() => import('../apps/GoalsApp'));
+const HabitsApp = lazy(() => import('../apps/HabitsApp'));
+const AcademicsApp = lazy(() => import('../apps/AcademicsApp'));
+const FocusApp = lazy(() => import('../apps/FocusApp'));
+const PlannerApp = lazy(() => import('../apps/PlannerApp'));
+const NotesApp = lazy(() => import('../apps/NotesApp'));
+const FitnessApp = lazy(() => import('../apps/FitnessApp'));
+const MoneyApp = lazy(() => import('../apps/MoneyApp'));
+const CareerApp = lazy(() => import('../apps/CareerApp'));
+const WellbeingApp = lazy(() => import('../apps/WellbeingApp'));
+const JournalApp = lazy(() => import('../apps/JournalApp'));
+const GamificationApp = lazy(() => import('../apps/GamificationApp'));
+const VisionBoardApp = lazy(() => import('../apps/VisionBoardApp'));
+const FutureMeApp = lazy(() => import('../apps/FutureMeApp'));
+const CampusLifeApp = lazy(() => import('../apps/CampusLifeApp'));
+const AIStudyBuddyApp = lazy(() => import('../apps/AIStudyBuddyApp'));
+const SettingsApp = lazy(() => import('../apps/SettingsApp'));
 
 const APP_COMPONENTS = {
   dashboard: DashboardApp,
@@ -43,6 +44,24 @@ const APP_COMPONENTS = {
   settings: SettingsApp
 };
 
+function WindowLoadingFallback() {
+  return (
+    <div className="space-y-4 p-4 animate-pulse">
+      <div className="flex items-center gap-3">
+        <Skeleton variant="circular" className="w-10 h-10" />
+        <div className="space-y-1.5 flex-1">
+          <Skeleton variant="text" className="w-48 h-4" />
+          <Skeleton variant="text" className="w-32 h-3" />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+        <Skeleton variant="rectangular" className="h-32" />
+        <Skeleton variant="rectangular" className="h-32" />
+      </div>
+    </div>
+  );
+}
+
 export default function WindowManager() {
   const { openWindows } = useOS();
 
@@ -54,7 +73,9 @@ export default function WindowManager() {
 
         return (
           <Window key={win.id} windowData={win}>
-            <AppComponent />
+            <Suspense fallback={<WindowLoadingFallback />}>
+              <AppComponent />
+            </Suspense>
           </Window>
         );
       })}

@@ -1,17 +1,30 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useOS } from '../../context/OSContext';
 
 export default function WallpaperBackground() {
   const { state } = useOS();
   const { wallpaper, customWallpaperUrl, animatedBackground } = state.appearance;
   const canvasRef = useRef(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
+  // Detect prefers-reduced-motion
   useEffect(() => {
-    if (!animatedBackground) return;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handler = (e) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  // Canvas particle animation with visibilitychange pause
+  useEffect(() => {
+    if (!animatedBackground || prefersReducedMotion) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let animationFrameId;
+    let isPaused = document.hidden;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -20,21 +33,35 @@ export default function WallpaperBackground() {
     resize();
     window.addEventListener('resize', resize);
 
-    // Particle or star system depending on wallpaper
+    // Visibility listener to pause when tab is inactive / hidden
+    const handleVisibilityChange = () => {
+      isPaused = document.hidden;
+      if (!isPaused) {
+        lastTime = performance.now();
+        animationFrameId = requestAnimationFrame(render);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Particle system
     const particles = [];
-    const count = wallpaper === 'deep_space' ? 80 : 35;
+    const count = wallpaper === 'deep_space' ? 70 : 32;
     for (let i = 0; i < count; i++) {
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        radius: Math.random() * 2 + 0.5,
-        speedX: (Math.random() - 0.5) * 0.3,
-        speedY: (Math.random() - 0.5) * 0.3,
-        alpha: Math.random() * 0.6 + 0.2
+        radius: Math.random() * 1.8 + 0.6,
+        speedX: (Math.random() - 0.5) * 0.25,
+        speedY: (Math.random() - 0.5) * 0.25,
+        alpha: Math.random() * 0.5 + 0.15
       });
     }
 
+    let lastTime = performance.now();
+
     const render = () => {
+      if (isPaused) return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       particles.forEach((p) => {
@@ -55,15 +82,16 @@ export default function WallpaperBackground() {
       animationFrameId = requestAnimationFrame(render);
     };
 
-    render();
+    animationFrameId = requestAnimationFrame(render);
 
     return () => {
       window.removeEventListener('resize', resize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [animatedBackground, wallpaper]);
+  }, [animatedBackground, wallpaper, prefersReducedMotion]);
 
-  // Background visual styling presets
+  // Static Background Layer Presets
   const renderBackgroundLayer = () => {
     if (wallpaper === 'custom' && customWallpaperUrl) {
       return (
@@ -117,19 +145,19 @@ export default function WallpaperBackground() {
       default:
         return (
           <div className="absolute inset-0 bg-os-bg overflow-hidden">
-            <div className="absolute top-[-10%] left-[-10%] w-[55%] h-[55%] rounded-full bg-gradient-to-br from-indigo-600/25 to-purple-800/15 blur-[120px] pointer-events-none animate-pulse-glow" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-gradient-to-tl from-purple-600/20 via-pink-600/15 to-transparent blur-[130px] pointer-events-none" />
-            <div className="absolute top-[35%] right-[20%] w-[35%] h-[35%] rounded-full bg-cyan-600/15 blur-[100px] pointer-events-none" />
-            <div className="absolute inset-0 bg-dots-pattern opacity-20 pointer-events-none" />
+            <div className={`absolute top-[-10%] left-[-10%] w-[55%] h-[55%] rounded-full bg-gradient-to-br from-indigo-600/20 to-purple-800/15 blur-[120px] pointer-events-none ${prefersReducedMotion ? '' : 'animate-pulse-glow'}`} />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-gradient-to-tl from-purple-600/15 via-pink-600/10 to-transparent blur-[130px] pointer-events-none" />
+            <div className="absolute top-[35%] right-[20%] w-[35%] h-[35%] rounded-full bg-cyan-600/10 blur-[100px] pointer-events-none" />
+            <div className="absolute inset-0 bg-dots-pattern opacity-15 pointer-events-none" />
           </div>
         );
     }
   };
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none">
       {renderBackgroundLayer()}
-      {animatedBackground && (
+      {animatedBackground && !prefersReducedMotion && (
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-60 pointer-events-none" />
       )}
     </div>

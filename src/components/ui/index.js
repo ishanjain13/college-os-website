@@ -8,3 +8,6 @@ export { Modal, default as ModalDefault } from './Modal';
 export { Skeleton, SkeletonText, SkeletonCard, default as SkeletonDefault } from './Skeleton';
 export { ProgressBar, default as ProgressBarDefault } from './ProgressBar';
 export { Toggle, default as ToggleDefault } from './Toggle';
+export { AnimatedCounter, default as AnimatedCounterDefault } from './AnimatedCounter';
+export { AnimatedCheckmark, default as AnimatedCheckmarkDefault } from './AnimatedCheckmark';
+export { EmptyState, default as EmptyStateDefault } from './EmptyState';

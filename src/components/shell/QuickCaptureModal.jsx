@@ -5,12 +5,13 @@ import {
   CheckCircle2, 
   CheckSquare, 
   Wallet, 
-  Feather, 
   BookOpen, 
-  X, 
-  Sparkles 
+  Sparkles,
+  FileText
 } from 'lucide-react';
 import { useOS } from '../../context/OSContext';
+import { Modal } from '../ui/Modal';
+import { Button } from '../ui/Button';
 
 export default function QuickCaptureModal() {
   const { 
@@ -29,8 +30,6 @@ export default function QuickCaptureModal() {
   const [title, setTitle] = useState('');
   const [extraInfo, setExtraInfo] = useState('');
   const [amount, setAmount] = useState('');
-
-  if (!isQuickCaptureOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -150,32 +149,19 @@ export default function QuickCaptureModal() {
     { id: 'habit', label: 'Habit Protocol', icon: CheckCircle2 },
     { id: 'assignment', label: 'Assignment', icon: Sparkles },
     { id: 'expense', label: 'Expense', icon: Wallet },
-    { id: 'note', label: 'Quick Note', icon: BookOpen }
+    { id: 'note', label: 'Quick Note', icon: FileText }
   ];
 
   return (
-    <div
-      onClick={() => setIsQuickCaptureOpen(false)}
-      className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 select-none"
+    <Modal
+      isOpen={isQuickCaptureOpen}
+      onClose={() => setIsQuickCaptureOpen(false)}
+      title="Instant Quick Capture"
+      description="Quickly capture a task, goal, habit protocol, deadline, expense, or note."
+      maxWidth="max-w-lg"
     >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg glass-window border border-white/20 p-6 shadow-2xl rounded-2xl animate-in zoom-in-95 duration-150 space-y-4"
-      >
-        <div className="flex items-center justify-between pb-3 border-b border-white/10">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <Plus className="w-5 h-5 text-indigo-400" />
-            <span>Instant Quick Capture</span>
-          </h3>
-          <button
-            onClick={() => setIsQuickCaptureOpen(false)}
-            className="text-os-text-muted hover:text-white cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Capture Type Buttons */}
+      <div className="space-y-4">
+        {/* Type Selector Grid */}
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
           {captureTypes.map((t) => {
             const Icon = t.icon;
@@ -185,23 +171,23 @@ export default function QuickCaptureModal() {
                 key={t.id}
                 type="button"
                 onClick={() => setCaptureType(t.id)}
-                className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1 text-[11px] transition-all cursor-pointer ${
+                className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 text-[11px] transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-indigo-600/30 border-indigo-500 text-white font-bold shadow-md'
-                    : 'bg-white/5 border-white/5 text-os-text-muted hover:bg-white/10'
+                    ? 'bg-os-accent/20 border-os-accent text-white font-semibold shadow-sm'
+                    : 'bg-white/5 border-os-border text-os-text-muted hover:bg-white/10'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isSelected ? 'text-indigo-300' : 'text-os-text-subtle'}`} />
-                <span>{t.label}</span>
+                <Icon className={`w-4 h-4 ${isSelected ? 'text-os-accent' : 'text-os-text-subtle'}`} />
+                <span className="truncate w-full text-center">{t.label}</span>
               </button>
             );
           })}
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-3 text-xs">
+        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           <div>
-            <label className="block text-os-text-muted mb-1 font-medium">Title / Action Item</label>
+            <label className="block text-os-text-muted mb-1 font-medium">Title / Description</label>
             <input
               type="text"
               required
@@ -209,7 +195,7 @@ export default function QuickCaptureModal() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={`Enter ${captureType} description...`}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-white focus:outline-none focus:border-indigo-500 text-xs"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-os-border focus:border-os-accent focus:outline-none text-white text-xs"
             />
           </div>
 
@@ -223,39 +209,42 @@ export default function QuickCaptureModal() {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="15.50"
-                className="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-white font-mono text-xs"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-os-border focus:border-os-accent focus:outline-none text-white font-mono text-xs"
               />
             </div>
           ) : (
             <div>
-              <label className="block text-os-text-muted mb-1 font-medium">Additional Context / Details</label>
+              <label className="block text-os-text-muted mb-1 font-medium">Context / Notes (Optional)</label>
               <input
                 type="text"
                 value={extraInfo}
                 onChange={(e) => setExtraInfo(e.target.value)}
-                placeholder="Course code, subject, or details..."
-                className="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-white text-xs"
+                placeholder="Course, priority, or additional context..."
+                className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-os-border focus:border-os-accent focus:outline-none text-white text-xs"
               />
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-white/10">
-            <button
+          <div className="flex justify-end gap-2 pt-3 border-t border-os-border">
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setIsQuickCaptureOpen(false)}
-              className="px-4 py-2 rounded-xl bg-white/5 text-os-text hover:bg-white/10 cursor-pointer"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold shadow-md cursor-pointer"
+              variant="primary"
+              size="sm"
+              leftIcon={Plus}
             >
-              Capture & Save
-            </button>
+              Capture Item
+            </Button>
           </div>
         </form>
       </div>
-    </div>
+    </Modal>
   );
 }
